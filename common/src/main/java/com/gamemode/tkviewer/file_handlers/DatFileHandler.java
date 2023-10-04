@@ -32,23 +32,51 @@ public class DatFileHandler extends FileHandler {
 
     public DatFileHandler(File file, boolean isBaram) {
         super(file);
+        System.out.println("asdf");
         this.isBaram = isBaram;
         this.filePath = this.file.getPath();
+        System.out.println("Handling DAT file: " + this.filePath);
         this.fileCount = this.readInt(true, true) - 1;
+        System.out.println(this.fileCount + " files in this DAT");
         for (int i = 0; i < this.fileCount; i++) {
             long dataLocation = this.readInt(true, true);
-            int totalRead = isBaram ? 32 : 13;
-            int readLength = lengthUntilZero();
-            String fileName = this.readString(readLength, true);
-            if (readLength < totalRead) {
-                this.seek(totalRead - readLength, false);
+            System.out.println("  dataLocation: " + dataLocation);
+
+            // haha what?
+            if (i > 0) {
+                this.seek(2, false);
             }
-            long nextFileLocation = this.filePosition;
-            long fileSize = this.readInt(true, true) - dataLocation;
+
+            int fileNameMaxLength = isBaram ? 32 : 13;
+            System.out.println("  fileNameMaxLength: " + fileNameMaxLength);
+
+//            int readLength = lengthUntilZero();
+//            System.out.println("  readLength: " + readLength);
+            long filenameLengthIndex = this.filePosition;
+            System.out.println("  filenameLengthIndex: " + filenameLengthIndex);
+            int filenameLength = this.readShort(true, true);
+            System.out.println("  filenameLength: " + filenameLength);
+
+            System.out.println("  fileNameIndex: " + this.filePosition);
+//            String fileName = this.readString(filenameLength, true, true);
+            String fileName = this.readString(fileNameMaxLength, true, true);
+            System.out.println("  fileName: " + fileName);
+
+//            if (filenameLength < fileNameMaxLength) {
+//                this.seek(fileNameMaxLength - filenameLength, false);
+//            }
+            long nextFileHeaderEntryStart = this.filePosition;
+            System.out.println("  nextFileHeaderEntryStart: " + nextFileHeaderEntryStart);
+
+            long nextFileDataLocation = this.readInt(true, true);
+            long thisFileSize = nextFileDataLocation - dataLocation;
+            System.out.println("  thisFileSize: " + thisFileSize);
+
             this.seek(dataLocation, true);
-            ByteBuffer fileData = this.readBytes(fileSize, true);
+            ByteBuffer fileData = this.readBytes(thisFileSize, true);
             files.put(fileName, fileData);
-            this.seek(nextFileLocation, true);
+            this.seek(nextFileHeaderEntryStart, true);
+            System.out.println();
         }
 
         this.close();
