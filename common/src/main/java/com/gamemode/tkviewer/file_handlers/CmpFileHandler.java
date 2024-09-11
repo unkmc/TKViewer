@@ -44,23 +44,19 @@ public class CmpFileHandler extends FileHandler {
     }
 
     public int getIndex(int x, int y) {
-        int depth = 0;
-        int length = 0;
-
-        for (int i = 0; i < mapTiles.size(); i++) {
-            if (length == x && depth == y) {
-                return i;
-            }
-
-            if ((((i + 1) % this.mapWidth) == 0) && (i != 0)) {
-                depth += 1;
-                length = 0;
-            } else {
-                length += 1;
-            }
+        if (x < 0 || x >= this.mapWidth || y < 0 || y >= this.mapHeight) {
+            return -1;
         }
+        return y * this.mapWidth + x;
+    }
 
-        return -1;
+    public int[] getCoordinates(int index) {
+        if (index < 0 || index >= this.mapWidth * this.mapHeight) {
+            return null;
+        }
+        int x = index % this.mapWidth;
+        int y = index / this.mapWidth;
+        return new int[]{x, y};
     }
 
     @Override
